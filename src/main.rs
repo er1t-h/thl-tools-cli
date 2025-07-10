@@ -9,7 +9,7 @@ use clap::Parser;
 use cli::{Action, CliArgs};
 use thl_tools::{
     csv::{extract_dialogues::DialogueExtractor, repack_dialogues::DialogueRepacker},
-    helpers::offset_wrapper::{OffsetReadWrapper, OffsetWriteWrapper},
+    helpers::offset_wrapper::OffsetReadWrapper,
     mbe::MBEFile,
     mvgl::{Extractor, Packer},
 };
@@ -53,20 +53,6 @@ fn main() -> Result<()> {
                 ),
             )
             .context("something went wrong during the repacking")?,
-        Action::ReadLines { source, prefix, .. } => {
-            //let file = MBEFile::parse(&mut OffsetReadWrapper::new(&mut BufReader::new(
-            //    File::open(&source)?,
-            //)))
-            //.context("something went wrong while parsing file")?;
-            //for (message, char_and_call) in file.into_important_messages() {
-            //    println!(
-            //        "{}{}: {}",
-            //        prefix,
-            //        char_and_call.character.name(),
-            //        String::from_utf8_lossy(&message.text)
-            //    )
-            //}
-        }
         Action::ExtractDialogues {
             game_path,
             languages,

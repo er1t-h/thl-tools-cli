@@ -1,4 +1,4 @@
-use std::{borrow::Cow, path::PathBuf};
+use std::path::PathBuf;
 
 use anyhow::{Ok, Result, bail};
 use regex::Regex;
@@ -71,14 +71,6 @@ pub enum Action {
         #[arg(long)]
         no_rename_images: bool,
     },
-    /// Read every lines of a `.mbe` file.
-    ReadLines {
-        /// The path to the `.mbe` file.
-        source: PathBuf,
-        /// The prefix appended at the beginning of each line.
-        #[arg(short, long, default_value_t = Cow::Borrowed("> "))]
-        prefix: Cow<'static, str>,
-    },
     /// Extract all dialogues from the game, putting them all into a single `.csv`
     ExtractDialogues {
         /// The path to the game directory.
@@ -130,7 +122,9 @@ pub enum Action {
         #[arg(long)]
         overwrite: bool,
     },
+    /// Checks if all the MBE files of a directory are parseable (intended for debug)
     CheckMbes {
+        /// Path to the directory
         path: PathBuf,
     },
 }
@@ -164,11 +158,6 @@ impl CliArgs {
                 }
                 if !*overwrite && destination.exists() {
                     bail!("{} should not exist", destination.display())
-                }
-            }
-            Action::ReadLines { source, .. } => {
-                if !source.is_file() {
-                    bail!("{} should be a valid file", source.display())
                 }
             }
             Action::ExtractDialogues {
