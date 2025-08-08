@@ -11,6 +11,6 @@ log = "0.4.27"
 regex = "1.11.1"
 rustyline = "16.0.0"
 tempfile = "3.20.0"
-#thl-tools = { version = "^0.1.2", git = "https://github.com/er1t-h/thl-tools" }
-thl-tools = { version = "^0.1.2", path = "../thl-tools" }
+thl-tools = { version = "^0.1.2", git = "https://github.com/er1t-h/thl-tools" }
+# thl-tools = { version = "^0.1.2", path = "../thl-tools" }
 walkdir = "2.5.0"
