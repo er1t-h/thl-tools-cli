@@ -1,56 +1,48 @@
-# THL Tools
+# THL Tools CLI
 
-CLI tool to extract and repack files from the "The Hundred Line" game
+If you're here, you're probably looking to have fun with the files of The Hundred Line - Last Defense Academy. I'll do my best to explain clearly what you should do!
 
-## Usage
+## Requirements
 
-You need to have Rust installed on your computer. Due to the difference of path formatting, I don't know if this program works on Windows.
+First, you need to install Rust. Just follow the instructions on [this](https://www.rust-lang.org/fr/tools/install) site.
 
-### Extraction
+Then, open your terminal, and get the code of this repository, either by cloning it using `git clone https://github.com/er1t-h/thl-tools-cli.git`, or extracting [this](https://github.com/er1t-h/thl-tools-cli/archive/refs/heads/main.zip) archive.
 
-To extract the content of a `.mvgl` archive:
-```sh
-cargo x path/to/the/archive.mvgl path/to/the/extracted/directory
-```
+Once that's done, enter the directory in your terminal. (if you've chosen the extracting solution, right-click in the folder, and open in terminal).
 
-### Packing
+Then, you'll need to know the path to your game file. Most of the time, it should be something like `C:\Program Files (x86)\Steam\steamapps\common\The Hundred Line -Last Defense Academy-`
 
-To repack the content of a folder to a `.mvgl` archive:
-```sh
-cargo p path/to/the/directory path/to/the/created/archive
-```
+## What do you want to do?
 
-### Extract all dialogues in a single file
+### I want to get all ressources of the game.
 
-If you ever want to create a patch for the game, you'll most likely want to have all the dialogues of the game in one big file.
-```
-cargo xd path/to/the/game/directory languages
-```
-Where the game directory will most likely be `"/mnt/c/Program Files (x86)/Steam/steamapps/common/The Hundred Line -Last Defense Academy-"` if you're under WSL, and languages being a string of comma-separated languages (e.g. japanese,english).
-There might be a bug where inputting only one language would panic, just put another language and you should be good for now.
+Run `cargo x "[PATH_TO_THE_GAME_FILE]/gamedata/app_0.dx11.mvgl" extracted-app-0`  
+The extracted file will be ~25Go large, which is the size of all the resources. There's no temporary file or anything. It might take quite some time.  
+The sprites will be located in `extracted-app-0/images/`. If you don't see any image preview, I advise you install [paint.NET](https://www.getpaint.net/).
 
-### Repack the dialogues
+### I want to change some sprites
 
-Once you translated the game, you could want to put the lines back in the files. If it's the case, take the CSV you got by extracting the text of the game.
-It MUST have:
-- The message ID as the 1st column
-- The translated dialogue as the 3rd column
-- The name of the file as the LAST column
+Follow the "I want to get all ressources of the game", and change any of the sprite. Be sure to save it in the `.dds` format. I would advise you to create a `modified-files` folder, with the same structure and file names.
 
-(just keep the structure outputted by the extract-dialogues command and you should be good.)
+If you're playing the game in English, run `cargo p modified-files [PATH_TO_THE_GAME_FILE]/gamedata/patch_1.dx11.mvgl`. That way, you'll only repack the files you modified, so it'll take less time. (if you're playing in Japanese, replace `patch_1` by `patch_0`, or by `2` if in Traditionnal Chinese, and `3` if in Simplified Chinese).
 
-Then run
-```
-cargo rd path/to/the/dialogues/csv/file path/to/the/reference/mvgl path/to/the/destination
-```
-The reference mvgl will probably be: `/mnt/c/Program Files (x86)/Steam/steamapps/common/The Hundred Line -Last Defense Academy-/gamedata/app_text[ID].dx11.mvgl`
-Where ID is:
-- 0 for Japanese
-- 1 for English
-- 2 for Traditional Chinese
-- 3 for Simplified Chinese
+### I want to modify the text / create a language patch
 
-## Important note for translators
+OK, so first you're going to want a file with all the dialogues. Pretty easy!
 
-If you plan to translate the game, the dialogues are actually split between `gamedata/app_text[ID].dx11.mvgl` and `gamedata/patch_app_text[ID].dx11.mvgl`.
-I'll probably find a better way to handle this at one point, but if you want to extract the `patch` one, you can use the `extract-dialogues-raw-path` for now.
+Run `cargo xd [PATH_TO_THE_GAME_FILES] [languages_you_want_to_extract]`  
+For instance, if you want the text in both Japanese and English, run `cargo xd "C:\Program Files (x86)\Steam\steamapps\common\The Hundred Line -Last Defense Academy-" japanese,english`
+
+You should get a `full-text.csv` file, that you can open in any spreadsheet you want. Since there's like 140k lines, though, most software will probably take their time loading.
+I personnaly use a self-hosted Grist, but it's outside the scope of this README.
+
+Once you finish you modifications, you'll probably want to put your text in the game. First, assert that the first column of your `full-text.csv` are Message IDs, the 3rd column are your modifications, and the last column are file paths.
+
+Then, run `cargo rd full-text.csv [PATH_TO_THE_GAME_FILES] [REFERENCE_LANGUAGE]`. The reference language is the language the untranslated line will be.
+For instance, to apply your patch on the English translation (meaning any untranslated line will remain in English), you'll want to run something like `cargo rd full-text.csv "C:\Program Files (x86)\Steam\steamapps\common\The Hundred Line -Last Defense Academy-" english`
+
+Tadam! You successfully applied your patch! Just run the game, and everything should be good. Note that some menu lines are only present in other, platform-specific files (like the "Close the Game" line on the title screen).
+
+## Something doesn't work as expected
+
+Go to the issues (at the top of this page). First, search your error, maybe someone already add it. Otherwise, open a new issue. Copy your error message, explaining what you wanted to do, and I'll try to locate the problem. (if I have the time though)
