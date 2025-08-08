@@ -29,6 +29,15 @@ impl Language {
             Self::SimplifiedChinese => "app_text03.dx11.mvgl",
         }
     }
+
+    pub fn patch_file_name(self) -> &'static str {
+        match self {
+            Self::Japanese => "patch_text00.dx11.mvgl",
+            Self::English => "patch_text01.dx11.mvgl",
+            Self::TraditionalChinese => "patch_text02.dx11.mvgl",
+            Self::SimplifiedChinese => "patch_text03.dx11.mvgl",
+        }
+    }
 }
 
 fn get_default_csv_path() -> PathBuf {
@@ -93,12 +102,8 @@ pub enum Action {
     ExtractDialoguesRawPath {
         /// The path to the game directory.
         ///
-        /// Usually, something like 'C:\Program Files (x86)\Steam\steamapps\common\The Hundred Line -Last Defense Academy-'
-        file_path_1: PathBuf,
-        /// The path to the game directory.
-        ///
-        /// Usually, something like 'C:\Program Files (x86)\Steam\steamapps\common\The Hundred Line -Last Defense Academy-'
-        file_path_2: PathBuf,
+        /// Usually, something like 'C:\Program Files (x86)\Steam\steamapps\common\The Hundred Line -Last Defense Academy-\gamedata\app_text01.dx11.mvgl'
+        file_paths: Vec<PathBuf>,
         /// The path to the destination.
         #[arg(long, default_value=get_default_csv_path().into_os_string())]
         destination: PathBuf,
@@ -106,8 +111,22 @@ pub enum Action {
         #[arg(long)]
         overwrite: bool,
     },
-    /// Repacks all dialogues in a single `.mvgl` file.
+    /// Repacks all dialogue directly in the game, renaming the old files as `{name}.{timestamp}.original`
     RepackDialogues {
+        /// The path to the `.csv` containing all text.
+        full_text: PathBuf,
+        /// The path to the game directory.
+        ///
+        /// Usually, something like 'C:\Program Files (x86)\Steam\steamapps\common\The Hundred Line -Last Defense Academy-'
+        game_path: PathBuf,
+        /// The `.mvgl` to use to repack.
+        reference_language: Language,
+        /// Removes the original files after the execution
+        #[arg(long)]
+        cleanup: bool,
+    },
+    /// Repacks all dialogues in a single `.mvgl` file.
+    RepackDialoguesRaw {
         /// The path to the `.csv` containing all text.
         full_text: PathBuf,
         /// The `.mvgl` to use to repack.
@@ -179,20 +198,38 @@ impl CliArgs {
             Action::ExtractDialoguesRawPath {
                 destination,
                 overwrite: _,
-                file_path_1,
-                file_path_2,
+                file_paths,
             } => {
-                if !file_path_1.is_file() {
-                    bail!("{} should be a valid file", file_path_1.display());
-                }
-                if !file_path_2.is_file() {
-                    bail!("{} should be a valid file", file_path_2.display());
+                for path in file_paths {
+                    if !path.is_file() {
+                        bail!("{} should be a valid file", path.display());
+                    }
                 }
                 if destination.exists() && !destination.is_dir() {
                     bail!("{} should not exist", destination.display());
                 }
             }
             Action::RepackDialogues {
+                full_text,
+                game_path,
+                reference_language,
+                ..
+            } => {
+                if !full_text.exists() {
+                    bail!("{} should exist", full_text.display());
+                }
+                let game_path = game_path.join("gamedata");
+                let text_file = game_path.join(reference_language.text_file_name());
+                let patch_file = game_path.join(reference_language.patch_file_name());
+
+                if !text_file.exists() {
+                    bail!("{} should exist", text_file.display());
+                }
+                if !patch_file.exists() {
+                    bail!("{} should exist", text_file.display());
+                }
+            }
+            Action::RepackDialoguesRaw {
                 full_text,
                 reference_mvgl,
                 destination,
